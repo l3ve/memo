@@ -95,13 +95,13 @@ minidump.dumpSymbol(binaryPath, callback)
 ```
 
 1. minidump.addSymbolPath
- 
+
  ``` javascript
  var globalSymbolPaths = []
 module.exports.addSymbolPath = Array.prototype.push.bind(globalSymbolPaths)
  ```
  只是把符号表文件路径存起来，解析的时候用到而已
- 
+
 2. minidump.dumpSymbol
 
  ``` javascript
@@ -129,35 +129,36 @@ module.exports.dumpSymbol = function (binary, callback) {
 ```
 调用接口后，报错 `Error: spawn ~/node_modules/minidump/build/src/tools/mac/dump_syms/dump_syms_mac ENOENT`。
 这里我们可以获取到几个重要信息
+
 	1.  从参数 `binary ` 可以看到，我们需要一个后缀名为 `.dSYM` 的文件，是的，这就是符号表
 	2.  报错信息看，对应目录下，确实没有这么一个可执行文件
 
  `.dSYM`文件，我们是自己项目生成的，如果崩溃点是 `node || c++` 就由对应的开发生成，我们这次是用`process.crash()`让 electron 崩溃的，所以需要`Electron Framework.dSYM`[下载地址](https://github.com/electron/electron/releases/tag/v4.2.12)。
- 
+
  但是没有 dump_syms_mac 文件，却一直毫无头绪。
- 
+
  ### 第四步 breakpad 解析 dump
- 
+
  老办法，第三方库类有问题，那就看源码。
- 
+
  源码里可以了解到`minidump`底层其实是用 Google 的`breakpad `来解析 dump 文件的。那么我们的问题就转移到了**breakpad 如何在 macOS 上解析 dump 文件**。
- 
+
  此时网上的资源可就多了很多可以参考的，有兴趣的同学可以自行了解。
- 
+
  那么我们要做的第一步就是编译上面缺失的文件，在`breakpad`项目`/breakpad-master/src/tools/mac/dump_syms`里有一个`dump_syms.xcodeproj`的项目，可以用**Xcode**编译下，生成一个`dump_syms`可执行文件。这个可执行文件就是之前调用`minidump.dumpSymbol`报出找不到的`dump_syms_mac`。
- 
+
  那么好了，可以继续之前后面卡住的步骤了。
- 
+
  接下来网上也有挺多文章介绍的，我就简单的说说过程。以之前`Electron Framework`的崩溃点为例（具体的文件都在`electron-v4.2.12-darwin-x64-dsym`里，`breakpad_symbols`则是可以直接用的字符表，可以以此为参考，这就是最终目标目录）
- 
+
  1. 生成 `.sym` 文件
-     * `./dump_syms Electron Framework.dSYM > Electron Framework.sym` 
+     * `./dump_syms Electron Framework.dSYM > Electron Framework.sym`
      * `minidump.dumpSymbol()`则能获取到文件流，需要自己去生成`.sym`
-  
+
   2. 生成固定的文件结构
- 
+
      对照`breakpad_symbols`可以看到，我们需要的文件结构应该是`Electron Framework/E5853EC4F6AC3269BA025E66A24420230/Electron Framework.sym`。中间这串哈希就是最后的关键，其实就是来自于`Electron Framework.sym`文件的第一行内容。
-  	
+
      * `head -1 Electron Framework.sym`用命令行查看
      * `minidump.dumpSymbol`的话就直接获取就好了
 
@@ -182,10 +183,10 @@ module.exports.dumpSymbol = function (binary, callback) {
 二选一，其实都一样
 
 1. 用` breakpad`生成的`minidump_stackwalk`可执行文件解析
-	
+
   在`breakpad-master/src/processor`里，直接用命令行`./minidump_stackwalk ./crash.dmp ./symbols`
-  
-  
+
+
 2. 用`minidump.walkStack(minidumpFilePath, [symbolPaths, ]callback)`其实实现就是上面的方法
 
 解析出来是这样的：
