@@ -1,4 +1,4 @@
-> 记录下如何解析 electron 在 MacOS 下崩溃产生的 dump 文件，略过了一些必要的知识点，大家自行补充。
+> 记录下如何解析 electron 在 MacOS 下崩溃产生的 dump 文件，略过了一些必要的知识点，大家自行补充。[讨论点赞传送门](https://github.com/l3ve/memo/issues/1)
 
 ### 涉及的相关连接
 
@@ -218,3 +218,6 @@ module.exports.dumpSymbol = function (binary, callback) {
 
 * 保证崩溃 `dump` 文件和 `dsym` 是匹配的，例子里就是 `electron` 的版本号
 * 崩溃点其实包括了 `node || C++`, 当然需要他们提供` dsym`，还需要配置，具体的可以参考[这里](https://chromium.googlesource.com/breakpad/breakpad/+/master/docs/mac_breakpad_starter_guide.md)
+
+---
+[讨论点赞传送门](https://github.com/l3ve/memo/issues/1)
