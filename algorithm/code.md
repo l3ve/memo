@@ -1,3 +1,7 @@
+领悟心得：
+1. 善用数据结构，用 `HashMap` 来去重
+2. 用 `match` 来处理 `Option`
+
 1：两数之和
 =
 >给定一个整数数组 nums 和一个整数目标值 target，请你在该数组中找出 和为目标值 的那 两个 整数，并返回它们的数组下标。
@@ -46,3 +50,113 @@ impl Solution {
     }
 }
 ```
+
+
+1：两数相加
+=
+>给你两个 非空 的链表，表示两个非负的整数。它们每位数字都是按照 逆序 的方式存储的，并且每个节点只能存储 一位 数字。
+>
+>请你将两个数相加，并以相同形式返回一个表示和的链表。
+>
+>你可以假设除了数字 0 之外，这两个数都不会以 0 开头。
+
+
+``` rust
+// Definition for singly-linked list.
+// #[derive(PartialEq, Eq, Clone, Debug)]
+// pub struct ListNode {
+//   pub val: i32,
+//   pub next: Option<Box<ListNode>>
+// }
+//
+// impl ListNode {
+//   #[inline]
+//   fn new(val: i32) -> Self {
+//     ListNode {
+//       next: None,
+//       val
+//     }
+//   }
+// }
+impl Solution {
+  pub fn add_two_numbers(
+    l1: Option<Box<ListNode>>,
+    l2: Option<Box<ListNode>>,
+    ) -> Option<Box<ListNode>> {
+        let mut l1 = l1;
+        let mut l2 = l2;
+        let mut carry = 0;
+
+        let _1 = l1.unwrap_or(Box::new(ListNode::new(0)));
+        let _2 = l2.unwrap_or(Box::new(ListNode::new(0)));
+
+        let mut _3 = _1.val + _2.val;
+        if _3 >= 10 {
+            carry = 1;
+            _3 = _3 - 10;
+        }
+        let mut res = Some(Box::new(ListNode::new(_3)));
+        l1 = _1.next;
+        l2 = _2.next;
+
+        let mut point = &mut res;
+        while l1.is_some() || l2.is_some() || carry != 0 {
+            let _1 = l1.unwrap_or(Box::new(ListNode::new(0)));
+            let _2 = l2.unwrap_or(Box::new(ListNode::new(0)));
+
+            let mut _3 = _1.val + _2.val + carry;
+            carry = 0;
+            if _3 >= 10 {
+                carry = 1;
+                _3 = _3 - 10;
+            }
+
+            let cur_res = Some(Box::new(ListNode::new(_3)));
+            point.as_mut().unwrap().next = cur_res;
+            point = &mut point.as_mut().unwrap().next;
+
+            l1 = _1.next;
+            l2 = _2.next;
+        }
+        res
+    }
+}
+
+===================
+
+impl Solution {
+    pub fn add_two_numbers(l1: Option<Box<ListNode>>, l2: Option<Box<ListNode>>) -> Option<Box<ListNode>> {
+        let mut result = None;
+        let mut tail = &mut result;
+        let mut t = (l1, l2, 0, 0); // (list1, list2, sum, carry)
+        loop {
+            t = match t {
+                (None, None, _, 0) => break,
+                (None, None, _, carry) => (None, None, carry, 0),
+                (Some(list), None, _, carry) | (None, Some(list), _, carry) if list.val + carry >= 10 => {
+                    (list.next, None, list.val + carry - 10, 1)
+                }
+                (Some(list), None, _, carry) | (None, Some(list), _, carry) => {
+                    (list.next, None, list.val + carry, 0)
+                }
+                (Some(l1), Some(l2), _, carry) if l1.val + l2.val + carry >= 10 => {
+                    (l1.next, l2.next, l1.val + l2.val + carry - 10, 1)
+                }
+                (Some(l1), Some(l2), _, carry) => {
+                    (l1.next, l2.next, l1.val + l2.val + carry, 0)
+                }
+            };
+
+            *tail = Some(Box::new(ListNode::new(t.2)));
+            tail = &mut tail.as_mut().unwrap().next;
+        }
+        result
+    }
+}
+
+```
+
+
+
+
+> 来源：力扣（LeetCode）
