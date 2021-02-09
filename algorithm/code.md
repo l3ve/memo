@@ -1,6 +1,7 @@
 领悟心得：
 1. 善用数据结构，用 `HashMap` 来去重
 2. 用 `match` 来处理 `Option`
+3. 字符与字符串的各种 API，str 与 vec 的性能差异（？）
 
 1：两数之和
 =
@@ -52,7 +53,7 @@ impl Solution {
 ```
 
 
-1：两数相加
+2：两数相加
 =
 >给你两个 非空 的链表，表示两个非负的整数。它们每位数字都是按照 逆序 的方式存储的，并且每个节点只能存储 一位 数字。
 >
@@ -153,6 +154,41 @@ impl Solution {
         result
     }
 }
+
+```
+
+
+
+3：无重复字符的最长子串
+=
+>给定一个字符串，请你找出其中不含有重复字符的 最长子串 的长度。
+
+
+``` rust
+pub fn length_of_longest_substring(s: String) -> i32 {
+  let mut count = 0;
+  let len = s.len();
+  let mut sub_str = String::new();
+
+  for i in 0..len {
+    let _s = &s[i..i + 1];
+    if let Some(point) = sub_str.find(_s) {
+      sub_str.drain(..point + 1);
+      sub_str.push_str(&_s);
+    } else {
+      sub_str.push_str(&_s);
+    }
+    if count < sub_str.len() {
+      count = sub_str.len();
+    }
+  }
+
+  count as i32
+}
+
+===================
+
+// 把 sub_str 改成 数组或者哈希
 
 ```
 
