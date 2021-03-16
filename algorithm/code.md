@@ -2,6 +2,7 @@
 1. 善用数据结构，用 `HashMap` 来去重
 2. 用 `match` 来处理 `Option`
 3. 字符与字符串的各种 API，str 与 vec 的性能差异（？）
+4. 操作原数组导致困难度增加，且更消耗内存。求中位数只需要得到合并数组的一半即可
 
 1：两数之和
 =
@@ -191,6 +192,92 @@ pub fn length_of_longest_substring(s: String) -> i32 {
 // 把 sub_str 改成 数组或者哈希
 
 ```
+
+
+
+4：寻找两个正序数组的中位数
+=
+>给定两个大小分别为 m 和 n 的正序（从小到大）数组 nums1 和 nums2。请你找出并返回这两个正序数组的 中位数。
+
+
+``` rust
+pub fn find_median_sorted_arrays(mut nums1: Vec<i32>, mut nums2: Vec<i32>) -> f64 {
+  let mut _mix_arr: Vec<i32> = vec![];
+  let is_even = (nums1.len() + nums2.len()) % 2 == 0;
+  let mid_len = (nums1.len() + nums2.len()) / 2 + 1;
+  if nums1.is_empty() || nums2.is_empty() {
+    _mix_arr.append(&mut nums1);
+    _mix_arr.append(&mut nums2);
+  } else {
+    let mut _a: Vec<i32> = nums1.drain(..1).collect();
+    let mut _b: Vec<i32> = nums2.drain(..1).collect();
+    loop {
+      if _a[0] < _b[0] {
+        _mix_arr.append(&mut _a);
+        if _mix_arr.len() == mid_len || nums1.is_empty() {
+          _mix_arr.append(&mut _b);
+          _mix_arr.append(&mut nums2);
+          break;
+        }
+        _a = nums1.drain(..1).collect();
+      } else {
+        _mix_arr.append(&mut _b);
+        if _mix_arr.len() == mid_len || nums2.is_empty() {
+          _mix_arr.append(&mut _a);
+          _mix_arr.append(&mut nums1);
+          break;
+        }
+        _b = nums2.drain(..1).collect();
+      }
+    }
+  }
+  if is_even {
+    (_mix_arr[mid_len - 2] + _mix_arr[mid_len -1]) as f64 / 2_f64
+  } else {
+    return _mix_arr[mid_len - 1] as f64;
+  }
+}
+
+
+===================
+
+pub fn find_median_sorted_arrays(nums1: Vec<i32>, nums2: Vec<i32>) -> f64 {
+  if nums1.len() + nums2.len() == 0 {
+    return 0.0;
+  }
+  let is_even = (nums1.len() + nums2.len()) % 2 == 0;
+  let len = (nums1.len() + nums2.len()) / 2 + 1;
+  let mut nums = vec![0; len + 1];
+  let mut i: usize = 0;
+  let mut j: usize = 0;
+  while &i + &j < len {
+    if i >= nums1.len() {
+      nums[i + j] = nums2[j];
+      j = j + 1;
+    } else if j >= nums2.len() {
+      nums[i + j] = nums1[i];
+      i = i + 1;
+    } else if nums1[i] < nums2[j] {
+      nums[i + j] = nums1[i];
+      i = i + 1;
+    } else if nums1[i] > nums2[j] {
+      nums[i + j] = nums2[j];
+      j = j + 1;
+    } else {
+      nums[i + j] = nums1[i];
+      i = i + 1;
+      nums[i + j] = nums2[j];
+      j = j + 1;
+    }
+  }
+  if is_even {
+    (nums[len - 1] + nums[len - 2]) as f64 / 2.0
+  } else {
+    nums[len - 1] as f64
+  }
+}
+```
+
 
 
 
