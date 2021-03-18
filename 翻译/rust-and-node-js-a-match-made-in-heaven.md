@@ -1,43 +1,62 @@
 # Rust 和 Node.js：天生一对
 > 原文地址：https://blog.logrocket.com/rust-and-node-js-a-match-made-in-heaven/
 
-![例图 1](./img/rust-and-node-a-match-made-in-heaven-1.png)
+![](./img/rust-and-node-a-match-made-in-heaven-1.png)
 
 Node.js is a very popular JavaScript runtime for writing backend applications. Its flexibility and nonblocking nature have made it the premier choice for API consumption.
+*Node.js* 是一门基于 *JavaScript* 运行环境的流行后端语言。灵活性与异步非阻塞让它成为了 API服务器 的首选。
 
 Since it is a scripting language, JavaScript can be pretty slow. But thanks to V8 optimization, it is fast enough for practical applications. That said, Node.js is not good for heavy lifting; since it’s single-threaded, it is dangerous to block the main thread for doing long calculations. That’s where worker threads come in. Node.js has support for worker threads, so it can be used to perform long calculations.
+因为 *JavaScript* 是一门脚本语言，所以速度很慢。但是感谢有了 V8 的优化，让它的速度足够执行一般的应用。尽管如此，Node.js 并不适合密集型工作：由于它是单线程，计算量大的情况下就会有阻塞主进程的危险。所以才有了 worker threads，用来处理大计算量的工作。
 
 As great as worker threads are, JavaScript is still slow. Moreover, worker thread are not available in all supported LTS versions of Node. Fortunately, we can use Rust to build a native add-on for Node.js. FFI is another alternative, but it’s slower than the add-on approach. Rust is blazing fast and has fearless concurrency. Since Rust has a very small runtime (or “not runtime”), our binary size should also be pretty small.
+即使有了 worker threads，JavaScript 还是很慢。而且，LTS（长期支持）版本的 Node 并不都支持 worker thread。 幸运的是，我们可以用 Rust 来构建 Node.js 原生的 add-on（插件）。FFI 则是另一种选择，只是没有 add-on 快。Rust 正在快速的发展，且拥有强大的并发性。因为 Rust 的 runtime 很小（或者说没有），所以我们编译后的二进制文件也很小。
 
 ## What is Rust?
+## 什么是 Rust？
 
 Rust is a systems programming language by Mozilla. It can call the C library by default and includes first-class support for exporting functions to C.
+Rust 是一门由 Mozilla 打造的系统语言。它默认可以调用 C 的库，还可以导出支持的 first-class 的 C 函数。
 
 Rust provides you with low-level control and high-level ergonomics. It gives you control of memory management without the hassle associated with these controls. It also delivers zero-cost abstraction, so you pay for only what you use.
+Rust 提供了底层级别的操作和高级语言的特性。它可以让你省心的进行内存管理操作。它还提供了零成本的抽象，所以你可以尽情的使用它。
 
 Rust can be called in a Node.js context via various methods. I’ve listed some of the most widely used below.
+Rust 可以通过各种方法在 Node.js 的上下文中被调用。我列了一些比较常用的方法在下面。
 
 * You can use FFI from Node.js and Rust, but this is very slow
+* 你可以使用 Node.js 和 Rust 的 FFI，但这种方式速度很慢
 * You can use WebAssembly to create a node_module, but all Node.js functionality is not available
+* 你可以使用 WebAssembly 来创建一个 node_module，但并不是所有的 Node.js 的功能都可以用
 * You can use native addons
+* 你可以使用原生的插件（addons）
 
 ## What is a native addon?
+## 什么是原生插件
 
 Node.js addons are shared objects written in C++ that are dynamically linked. You can load them into Node.js using the require() function and use them as if they were ordinary Node.js modules. They primarily provide an interface between JavaScript running in Node.js and C/C++ libraries.
+Node.js的插件是用 C++ 编写的共享对象，他们是动态链接的。你可以在 Node.js 中使用 require() 方法加载它，并把它当作 Node.js 的模块使用。主要的功能就是提供了在 Node.js 和 C/C++ 之间的接口。
 
 A native addon provides a simple interface to work with another binary by loading it in V8 runtime. It is very fast and safe for making calls across the languages. Currently, Node.js supports two types of addon methods: C++ addons and N-API C++/C addons.
+一个原生插件提供了一个简单的接口，可以让它在 V8 环境里加载却在另一种环境中运行。这种联通方式十分高效且安全。至今为止，Node.js 支持 2 种类型的插件：C++ 插件和 N-API C++/C 插件。
 
 ## C++ addons
+## C++ 插件
 
 A C++ addon is an object that can be mounted by Node.js and used in the runtime. Since C++ is a compiled language, these addons are very fast. C++ has a wide array of production-ready libraries that can be used to expand the Node.js ecosystem. Many popular libraries use native addons to improve performance and code quality.
+C++ 插件就是一个可以挂载且运行在 Node.js 的对象。由于 C++ 是编译语言，插件的速度就会很快。而且可以用 C++ 大量的生产环境的库来扩展 Node.js 的生态圈。许多流行的库都是用原生的插件来提高性能和代码质量。
 
 ## N-API C++/C addons
+## N-API C++/C 插件
 
 The main problem with C++ addons is that you need to recompile them with every change to underlying JavaScript runtime. It causes a problem with maintaining the addon. N-API tries to eliminate this by introducing a standard application binary interface (ABI). The C header file remains backward compatible. That means you can use the addon compiled for a particular version of Node.js with any version greater than the version for which it was compiled. You would use this method to implement your addon.
+C++ 插件主要的问题在于你需要重复编译，每当你改变 JavaScript 的执行环境。这会导致维护插件变得麻烦。N-API 则引入一套二进制接口标准（ABI）来规避这个问题。且 C 头文件保持向后兼容。这意味着你可以用特定版本的 Node.js 来编译插件，不需要顾虑更老的版本。你将会喜欢上这种方法来编译你的插件。
 
 ## Where does Rust come in?
+## Rust 用在什么地方？
 
 Rust can mimic the behavior of a C library. In other words, it exports the function in a format C can understand and use. Rust calls the C function to access and use APIs provided by the Node.js. These APIs provide methods for creating JavaScript strings, arrays, numbers, error, objects, functions, and more. But we need to tell Rust what these external functions, structs, pointers, etc. look like.
+Rust 可以用来仿造 C 的库。或者说，它可以导出 C 风格且可以调用的函数。Rust 调用 C 函数来访问和调用 Node.js 提供的 APIs。这些 APIs 方法可以创建 JavaScript 的 strings, arrays, numbers, error, objects, functions 等。但我们需要告诉 Rust 一些必要的信息：外部函数，结构体，指针等，就像这样。
 
 ``` rust
 #[repr(C)]
@@ -59,10 +78,13 @@ extern {
 ```
 
 Rust lays down the structs in memory differently, so we need to tell it to use the style C uses. It would be a pain to create these functions by hand, so we’ll use a crate called nodejs-sys, which uses bindgen to create a nice definition for N-API.
+Rust 会以不同的方式在内存中放置结构体，所以我们需要告诉它使用 C 风格的方式。手动创建这些方法会很痛苦，所以我们将会使用一个叫做 nodejs-sys 的库（crate），这个库使用了 bindgen 为 N-API 创建了一个很好的定义(原文：which uses bindgen to create a nice definition for N-API.)
 
 bindgen automatically generates Rust FFI bindings to C and C++ libraries.
+bindgen 自动生成了 Rust FFI 与 C 和 C++ 库的绑定。
 
 Note: There will a lot of unsafe code ahead, mostly external function calls.
+注意：之后将会有大量的不安全代码，主要是外部函数调用。
 
 ![](./img/joker-dont-say-i-didnt-warn-you-gif.gif)
 
