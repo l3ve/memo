@@ -3,6 +3,8 @@
 2. 用 `match` 来处理 `Option`
 3. 字符与字符串的各种 API，str 与 vec 的性能差异（？）
 4. 操作原数组导致困难度增加，且更消耗内存。求中位数只需要得到合并数组的一半即可
+5. 思路问题，优解思路：先消除偶数的情况（必然自相等），在遍历对比左右
+6. 找规律而已
 
 1：两数之和
 =
@@ -278,7 +280,7 @@ pub fn find_median_sorted_arrays(nums1: Vec<i32>, nums2: Vec<i32>) -> f64 {
 }
 ```
 
-4：最长回文子串
+5：最长回文子串
 =
 >给你一个字符串 s，找到 s 中最长的回文子串。
 
@@ -354,6 +356,70 @@ impl Solution {
     }
 }
 
+```
+
+6：Z 字形变换
+=
+>将一个给定字符串 s 根据给定的行数 numRows ，以从上往下、从左到右进行 Z 字形排列。
+比如输入字符串为 "PAYPALISHIRING" 行数为 3 时，排列如下：
+>```
+>P   A   H   N
+>A P L S I I G
+>Y   I   R
+>```
+>之后，你的输出需要从左往右逐行读取，产生出一个新的字符串，比如："PAHNAPLSIIGYIR"。
+
+``` rust
+pub fn convert(s: String, num_rows: i32) -> String {
+  let mut res = String::new();
+  let n = num_rows * 2 - 2;
+  if n <= 1 {
+    return s;
+  }
+  let loop_count = s.len() as i32 / n + 1;
+  for _i in 0..num_rows {
+    for _ii in 0..loop_count {
+      let _index = (_i + n * _ii) as usize;
+      if _index >= s.len() {
+        break;
+      }
+      let _str = s.get(_index.._index + 1).unwrap();
+      res.push_str(_str);
+      if _i != num_rows - 1 && _i != 0 {
+        let _iii = _index + (n - 2 * _i) as usize;
+        if _iii >= s.len() {
+          break;
+        }
+        let _str = s.get(_iii.._iii + 1).unwrap();
+        res.push_str(_str);
+      }
+    }
+  }
+  res
+}
+
+===================
+pub fn convert(s: String, num_rows: i32) -> String {
+  if num_rows <= 1 {
+    return s;
+  }
+  let n = s.len();
+  let num_rows = num_rows as usize;
+  let cycle_len = 2 * num_rows - 2;
+  let s = s.into_bytes();
+  let mut ret = String::new();
+  for i in 0..num_rows {
+    let mut j = 0;
+    while j + i < n {
+      ret.push(s[i + j] as char);
+      if i != 0 && i != num_rows - 1 && j + cycle_len - i < n {
+        ret.push(s[j + cycle_len - i] as char);
+      }
+      j += cycle_len;
+    }
+  }
+  ret
+}
 ```
 
 
