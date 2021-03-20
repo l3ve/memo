@@ -5,6 +5,7 @@
 4. 操作原数组导致困难度增加，且更消耗内存。求中位数只需要得到合并数组的一半即可
 5. 思路问题，优解思路：先消除偶数的情况（必然自相等），在遍历对比左右
 6. 找规律而已
+7. match let 模式，边界的判断
 
 1：两数之和
 =
@@ -361,7 +362,8 @@ impl Solution {
 6：Z 字形变换
 =
 >将一个给定字符串 s 根据给定的行数 numRows ，以从上往下、从左到右进行 Z 字形排列。
-比如输入字符串为 "PAYPALISHIRING" 行数为 3 时，排列如下：
+>
+>比如输入字符串为 "PAYPALISHIRING" 行数为 3 时，排列如下：
 >```
 >P   A   H   N
 >A P L S I I G
@@ -422,6 +424,66 @@ pub fn convert(s: String, num_rows: i32) -> String {
 }
 ```
 
+7：整数反转
+=
+>给你一个 32 位的有符号整数 x ，返回将 x 中的数字部分反转后的结果。
+>
+>如果反转后整数超过 32 位的有符号整数的范围 [−231,  231 − 1] ，就返回 0。
+>
+>假设环境不允许存储 64 位整数（有符号或无符号）。
+
+``` rust
+pub fn reverse(x: i32) -> i32 {
+  let min = x < 0;
+  let option_abs = x.checked_abs();
+  if option_abs.is_none() {
+    return 0
+  }
+  let str = option_abs.unwrap().to_string();
+  let mut n = 0;
+  let mut res = 0_i32;
+  for s in str.chars() {
+    let option_pow = 10_i32.checked_pow(n);
+    if option_pow.is_none() {
+      return 0;
+    }
+    let option_mul = (s.to_digit(10).unwrap() as i32).checked_mul(option_pow.unwrap());
+    if option_mul.is_none() {
+      return 0;
+    }
+    let option_res = res.checked_add(option_mul.unwrap());
+    if option_res.is_none() {
+      return 0;
+    }
+    res = option_res.unwrap();
+    n = n + 1;
+  }
+  if min {
+    res = -res;
+  }
+  res
+}
+
+===================
+pub fn reverse(x: i32) -> i32 {
+        let mut num = x;
+        let mut reverse_num: i32 = 0;
+        while num != 0 {
+            // 计算出每一位的数字
+            let digit = num % 10;
+            // 每次计算出一位数字后除以 10
+            num /= 10;
+            if let Some(rev_num) = reverse_num.checked_mul(10) {
+                // 将反转后的数字增加 10 倍，把反转后的数字上累加到后面
+                reverse_num = rev_num + digit;
+            } else {
+                // 越界，直接返回
+                return 0;
+            }
+        }
+        reverse_num
+    }
+```
 
 
 
