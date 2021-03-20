@@ -228,14 +228,19 @@ Next, we’ll move on to creating functions, arrays, and promises and using libu
 接下来，我们会继续去创建函数，数组，还有 promise 和使用 libuv 的线程池（thread-pool）来提升重量级任务而不阻塞主线程。
 
 ## A deep dive into N-API
+## 深入了解 N-API
 
 Now you know how to implement common patterns using N-API and Rust. A very common pattern is the export function, which can be called by the user of the library or Node module. Let’s start by creating a function.
+现在你知道了怎么简单的在 Rust 中使用 N-API。最常见的就是导出函数，因为它可以被用在使用者的库里或者是 Node.js 的模块里。让我们来创建这种函数吧。
 
 You should use napi_create_function to create your functions so that you can use them from Node.js. You can add these functions as a property to exports to use from Node.js.
+你可以用 napi_create_function 来创建在 Node.js 中使用的函数。你可以把这些函数添加到导出的对象属性里给 Node.js 用。
 
 ## Creating a function
+## 创建一个函数
 
 JavaScript functions are also represented by the napi_value pointer. A N-API function is pretty easy to create and use.
+JavaScript 的函数也是用 napi_value 指针来表示。一个 N-API 函数是非常容易创建和使用的。
 
 ``` rust
 use nodejs_sys::{
@@ -283,16 +288,26 @@ pub unsafe extern "C" fn napi_register_module_v1(
 ![](./img/rust-function-created-with-n-api.png)
 
 In the above example, we created a function in Rust named say_hello, which is executed when the JavaScript calls the function. We created a function using napi_create_function, which takes the following arguments:
+上面的例子里，我们在 Rust 里创建了一个叫 say_hello 做函数，当 JavaScript 调用函数（myFunc）时就会执行这个函数（say_hello）。我们用 napi_create_function 创建了一个函数，并传入下面的参数：
 
 * The napi_env value of the environment
+* napi_env 类型的的上下文的值
 * A string for the function name which that be given to the JavaScript function
+* 一个可以给 JavaScript 当函数名调用的字符串
 * The length of the function name string
+* 函数名的长度
 * The function that is executed when the JavaScript calls the newly created function
+* 函数本体，当 JavaScript 调用创建的函数（myFunc）时要执行的函数（say_hello）
 * Context data that can be passed by the user later and accessed from the Rust function
+* 上下文数据，之后可以在 Rust 函数里回传（napi_callback_info）
 * An empty memory address where the pointer to the JavaScript function can be saved
-* When you create this function, add it as a property to your exports object so that you can use it from JavaScript
+* 一块空的内存地址，可以用来保存 JavaScript 函数的指针
+
+ When you create this function, add it as a property to your exports object so that you can use it from JavaScript
+当你创建完这个函数，把它添加到导出的对象上，就可以在 JavaScript 里使用它了。
 
 The function on the Rust side must have the same signature as shown in the example. We’ll discuss next how to access arguments inside a function using napi_callback_info. We can access this from a function and other arguments as well.
+这个函数在 Rust 里必需有个一样的签名，就如例子里。接下来我们将会讨论如何用 napi_callback_info 访问函数里的参数，可以从函数里和参数里访问到。
 
 ## Accessing arguments
 
