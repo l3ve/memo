@@ -310,8 +310,10 @@ The function on the Rust side must have the same signature as shown in the examp
 这个函数在 Rust 里必需有个一样的签名，就如例子里。接下来我们将会讨论如何用 napi_callback_info 访问函数里的参数，可以从函数里和参数里访问到。
 
 ## Accessing arguments
+## 传递参数
 
 Function arguments are very important. N-API provides a method to access these arguments. napi_callback_info provides the pointer with detailed information about the function in the JavaScript side of the code.
+参数在函数中起到非常重要的作用。N-API 提供一个方法来传递参数。napi_callback_info 方法提供了一个指针，存储了 JavaScript 里函数的细节。
 
 ``` rust
 use nodejs_sys::{
@@ -373,15 +375,23 @@ pub unsafe extern "C" fn napi_register_module_v1(
 ![](./img/accessing-arguments-n-api.png)
 
 Use napi_get_cb_info to get the arguments. The following arguments must be provided:
+napi_get_cb_info 函数可以获取到参数。下面是入参：
 
 * napi_env
+* napi_env
 * The info pointer
+* 回调函数信息的指针
 * The number of expected arguments
+* 参数的个数
 * A buffer where arguments can be written as napi_value
+* 存储参数（type：napi_value）的 buffer
 * A memory location to store metadata the user provided when JavaScript function was created
+* 一块内存，用来存储 JavaScript 函数创建时的 this 数据
 * A memory location where this value pointer can be written
+* 一块内存，用来保存变量指针
 
 We need to create an array with memory locations where C can write a pointer to arguments and we can pass this pointer buffer to N-API function. We also get this, but we aren’t using it in this example.
+我们需要创建一个内存数组，给 C 可以把参数的指针写进去，且我们可以传这个指针给 N-API 的函数。我们也可以获取到 this，但例子里我们并没有使用它。
 
 ## Working with strings arguments
 
