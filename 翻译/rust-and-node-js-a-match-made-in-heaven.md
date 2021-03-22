@@ -1,5 +1,9 @@
 # Rust 和 Node.js：天生一对
 > 原文地址：https://blog.logrocket.com/rust-and-node-js-a-match-made-in-heaven/
+>
+> 译者：三三
+>
+> 转载请标明出处
 
 ![](./img/rust-and-node-a-match-made-in-heaven-1.png)
 
@@ -394,8 +398,10 @@ We need to create an array with memory locations where C can write a pointer to 
 我们需要创建一个内存数组，给 C 可以把参数的指针写进去，且我们可以传这个指针给 N-API 的函数。我们也可以获取到 this，但例子里我们并没有使用它。
 
 ## Working with strings arguments
+## 使用字符串参数
 
 Most of the time, you need to work with strings in JavaScript. Both creating and getting the value of a string are pretty straightforward. Use napi_get_value_string_utf8 and call this function twice: the first time to get length and second time to get the value of the string.
+大部分时间，你都需要在 JavaScript 里用到字符串。创建和获取字符串都非常简单。调用两次 napi_get_value_string_utf8：第一次获取长度，第二次获取值。
 
 ``` rust
 use nodejs_sys::{
@@ -463,33 +469,48 @@ pub unsafe extern "C" fn napi_register_module_v1(
 ![](./img/string-arguments-n-api.png)
 
 You’ll need to pass a few arguments to napi_create_string_utf8 to create a string. If a null pointer is passed as a buffer, the length of the string is given. The following arguments are required:
+你将需要传递一些参数给 napi_create_string_utf8 来创建字符串。如果 buffer 传的是空指针，你会得到的是字符串的长度。下面就是必要的参数：
 
 * napi_env
+* napi_env
 * napi_value pointer to the string in javascript side
+* 一个指向 JavaScript 字符串的指针
 * The buffer where the string is to be written if null gives the length of the string
+* 一块缓存区，如果是空的则返回字符串长度
 * The length of the buffer
+* 缓存区的长度
 * Bytes written to the buffer
+* 写入数据的缓存区
 
 ## Working with promises and libuv thread pool
+## 使用 promise 和 libuv 线程池
 
 It’s not a good idea to block the main thread of Node.js for doing calculations. You can use libuv threads to do the heavy lifting.
+主线程因运行大量计算而阻塞并不是一件好事。你可以用 libuv 的线程去做这些笨重的事。
 
 First, create a promise. The promise will reject or resolve based on the success of your work. For this, you’ll need to create three functions. The first one is called from the JavaScript world and the control would be passed to the second function, which runs on libuv thread and has no access to JavaScript. The third function, which does have access to the JavaScript side, is called after the second finishes. You can use the napi_create_async_work method for the libuv thread.
+首先是创建一个 promise。promise 会根据你的状态，执行 reject 或者 resolve。这样，你就需要创建三个函数。第一个函数是在 JavaScript 里被调用的，然后控制权将会转移到第二个函数，第二个函数就运行在 libuv 线程里且没有访问 JavaScript 的权利。第三个函数则可以在第二个函数完成时被调用，访问到 JavaScript。你可以使用napi_create_async_work 来完成 libuv 线程。
 
 ## Creating a promise
+## 创建 promise
 
 To create a promise, simply use napi_create_promise. This will provide a pointer, napi_deferred, which can then resolve or reject a promise using the following functions:
+用 napi_create_promise 就可以简单的创建一个 promise 了。它会提供给你一个指针和 napi_deferred，napi_deferred 可以用下面的函数来处理 promise 的 resolve 和 reject。
 
 * napi_resolve_deferred
 * napi_reject_deferred
 
 ## Error handling
+## 错误处理
 
 You can create and throw an error from the Rust code using napi_create_error and napi_throw_error. Every N-API function returns a napi_status, which should be checked.
+你可以使用 napi_create_error 和 napi_throw_error 来在 Rust 里创建并抛出错误。所有的 N-API 函数都会返回一个需要被检测的状态值 napi_status。
 
 ## Real code
+## Don't BB, Show me the code
 
 The following example shows how to schedule async work.
+下面的例子就是实现了一个异步工作流
 
 ``` rust
 use nodejs_sys::{
@@ -626,18 +647,25 @@ pub unsafe extern "C" fn napi_register_module_v1(
 ```
 
 We created a struct to store a pointer to our napi_async_work and napi_deferred as well as our output. Initially, the output is None. Then we created a promise, which provides a deferred that we save in our data. This data is available to us in all of our functions.
+我们创建了一个结构体来存储指向 napi_async_work ，napi_deferred 和输出结果的指针。最开始，输出结果为 None。然后我们创建了一个 promise 来提供一个 deferred，用于储存我们输出的数据。这个结构体可以用于我们所有的函数里。
 
 Next, we converted our data into raw data and pass it to the napi_create_async_work function with other callbacks. We returned the promise we created, executed perform, and converted our data back to struct.
+接下来，我们把数据转换到 raw 数据里，然后当做其他回调参数传给 napi_create_async_work 函数。我们返回我们创建的 promise，执行 perform，把我们的数据转换回结构体。
 
 Once perform is completed on libuv thread, complete is called from the main thread, along with the status of the previous operation and our data. Now we can reject or resolve our work and delete work from the queue.
+一旦 perform 在 libuv 线程里完成，complete 就会在主线程里被调用，带着上一步的状态值和我们的数据。现在我们可以 reject 或者 resolve 我们的流程，然后从队列里删除工作流了。
 
 ## Let’s walk through the code
+## 让我们看看这代码吧
 
 Create a function called feb, which will be exported to JavaScript. This function will return a promise and schedule work for the libuv thread pool.
+创建一个叫做 feb 的函数，它将会被导出到 JavaScript 里。这个函数会返回一个在 libuv 线程池里执行的 promise。
 
 You can achieve this by creating a promise, using napi_create_async_work, and passing two functions to it. One is executed on the libuv thread and the other on the main thread.
+你要创建这么一个 promise 的话，需要用到 napi_create_async_work ，然后传两个函数给它。一个在 libuv 里执行，另一个在主线程里执行。
 
 Since you can only execute JavaScript from the main thread, you must resolve or reject a promise only from the main thread. The code includes a large number of unsafe functions.
+由于你只能在主线程里执行 JavaScript，所以你必须在主线程里 resolve 或者 reject 一个 promise。这段代码里包含了大量的不安全函数。
 
 ## feb function
 
@@ -775,23 +803,17 @@ pub unsafe extern "C" fn complete(env: napi_env, _status: napi_status, data: *mu
 ```
 
 ## Conclusion
+## 结尾
 
 When it comes to what you can do with N-API, this is just the tip of the iceberg. We went over a few patterns and covered the basics, such as how to export functions, create oft-used JavaScript types such as strings, numbers, arrays, objects, etc., get the context of a function (i.e., get the arguments and this in a function), etc.
+关于 N-API 可以用在什么地方，这里只是冰山一角。我们介绍了一些实现的步骤和基础知识，例如：如何导出函数，创建 JavaScript 类型的字符串，数字，数组，对象等，获取函数的上下文等（获取函数的参数）。
 
 We also examined an in-depth example of how to use libuv threads and create an async_work to perform heavy calculations in the background. Finally, we created and used JavaScript’s promises and learned how to do error handling in N-APIs.
+我们还深度解析了一个例子：如何利用 libuv 线程，在后台创建一个 async_work 来解决大计算量的任务。最后，我们创建和使用到了 JavaScript 的 promise，还有学到了如何在 N-API 里处理错误。
 
 There are many libraries available if you don’t want to write all the code by hand. These provide nice abstractions, but the downside is that they don’t support all features.
+这里有许多库可以帮你精简代码量。它们提供了不错的抽象，不足的是它们并不支持所有的特性。
 
 * [neon](https://github.com/neon-bindings/neon)
 * [node-bindgen](https://github.com/infinyon/node-bindgen)
 * [napi-rs](https://github.com/napi-rs/napi-rs)
-
-## 200’s only  Monitor failed and slow network requests in production
-
-Deploying a Node-based web app or website is the easy part. Making sure your Node instance continues to serve resources to your app is where things get tougher. If you’re interested in ensuring requests to the backend or third party services are successful, try [LogRocket](https://logrocket.com/signup/).
-
-![](./img/network-request-filter-2-1.png)
-
-LogRocket is like a DVR for web apps, recording literally everything that happens on your site. Instead of guessing why problems happen, you can aggregate and report on problematic network requests to quickly understand the root cause.
-
-LogRocket instruments your app to record baseline performance timings such as page load time, time to first byte, slow network requests, and also logs Redux, NgRx, and Vuex actions/state. Start monitoring for free.
