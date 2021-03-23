@@ -1,5 +1,5 @@
 # Rust 和 Node.js：天生一对
-> 原文地址：https://blog.logrocket.com/rust-and-node-js-a-match-made-in-heaven/
+> 原文地址：[rust-and-node-js-a-match-made-in-heaven](https://blog.logrocket.com/rust-and-node-js-a-match-made-in-heaven/)
 >
 > 译者：三三
 >
@@ -7,60 +7,41 @@
 
 ![](./img/rust-and-node-a-match-made-in-heaven-1.png)
 
-Node.js is a very popular JavaScript runtime for writing backend applications. Its flexibility and nonblocking nature have made it the premier choice for API consumption.
-*Node.js* 是一门基于 *JavaScript* 运行环境的流行后端语言。灵活性与异步非阻塞让它成为了 API服务器 的首选。
+**Node.js** 是一门基于 *JavaScript* 环境运行的后端流行语言。灵活性与异步非阻塞让它成为了 API服务器 的不二之选。
 
-Since it is a scripting language, JavaScript can be pretty slow. But thanks to V8 optimization, it is fast enough for practical applications. That said, Node.js is not good for heavy lifting; since it’s single-threaded, it is dangerous to block the main thread for doing long calculations. That’s where worker threads come in. Node.js has support for worker threads, so it can be used to perform long calculations.
-因为 *JavaScript* 是一门脚本语言，所以速度很慢。但是感谢有了 V8 的优化，让它的速度足够执行一般的应用。尽管如此，Node.js 并不适合密集型工作：由于它是单线程，计算量大的情况下就会有阻塞主进程的危险。所以才有了 worker threads，用来处理大计算量的工作。
+因为 *JavaScript* 是一门脚本语言，所以速度很慢。但是有了 V8 的优化，让它的速度足够运行一般的应用。尽管如此，Node.js 并不适合密集型工作：由于它是单线程，在计算量大的情况下就会有阻塞主进程的危险。所以才有了 worker threads，用来处理大计算量的工作。
 
-As great as worker threads are, JavaScript is still slow. Moreover, worker thread are not available in all supported LTS versions of Node. Fortunately, we can use Rust to build a native add-on for Node.js. FFI is another alternative, but it’s slower than the add-on approach. Rust is blazing fast and has fearless concurrency. Since Rust has a very small runtime (or “not runtime”), our binary size should also be pretty small.
-即使有了 worker threads，JavaScript 还是很慢。而且，LTS（长期支持）版本的 Node 并不都支持 worker thread。 幸运的是，我们可以用 Rust 来构建 Node.js 原生的 add-on（插件）。FFI 则是另一种选择，只是没有 add-on 快。Rust 正在快速的发展，且拥有强大的并发性。因为 Rust 的 runtime 很小（或者说没有），所以我们编译后的二进制文件也很小。
+即使有了 worker threads，JavaScript 还是很慢。而且，LTS（长期支持）版本的 Node 并不都支持 worker thread（Node.js v12 才作为稳定模块）。幸运的是，我们可以用 Rust 来构建 Node.js 原生的 add-on（插件）。FFI 则是另一种选择，只是没有 add-on 快。Rust 正在快速的发展，且拥有强大的并发性。而且得利于 Rust 的 runtime 很小（或者说没有），我们编译后的二进制文件也会很小。
 
-## What is Rust?
 ## 什么是 Rust？
 
-Rust is a systems programming language by Mozilla. It can call the C library by default and includes first-class support for exporting functions to C.
-Rust 是一门由 Mozilla 打造的系统语言。它默认可以调用 C 的库，还可以导出支持的 first-class 的 C 函数。
+Rust 是一门由 Mozilla 打造的系统语言。它默认可以调用 C 的库，还可以导出支持的 first-class 的函数给 C。
 
-Rust provides you with low-level control and high-level ergonomics. It gives you control of memory management without the hassle associated with these controls. It also delivers zero-cost abstraction, so you pay for only what you use.
 Rust 提供了底层级别的操作和高级语言的特性。它可以让你省心的进行内存管理操作。它还提供了零成本的抽象，所以你可以尽情的使用它。
 
-Rust can be called in a Node.js context via various methods. I’ve listed some of the most widely used below.
-Rust 可以通过各种方法在 Node.js 的上下文中被调用。我列了一些比较常用的方法在下面。
+在 Node.js 的上下文中可以通过各种方法来调用 Rust。我列了一些比较常用的方法在下面。
 
-* You can use FFI from Node.js and Rust, but this is very slow
 * 你可以使用 Node.js 和 Rust 的 FFI，但这种方式速度很慢
-* You can use WebAssembly to create a node_module, but all Node.js functionality is not available
-* 你可以使用 WebAssembly 来创建一个 node_module，但并不是所有的 Node.js 的功能都可以用
-* You can use native addons
+* 你可以使用 WebAssembly 来创建一个 node_module，但所有的 Node.js 功能都不可以用（译者：为啥不能用？在哪里用？原文：You can use WebAssembly to create a node_module, but all Node.js functionality is not available）
 * 你可以使用原生的插件（addons）
 
-## What is a native addon?
 ## 什么是原生插件
 
-Node.js addons are shared objects written in C++ that are dynamically linked. You can load them into Node.js using the require() function and use them as if they were ordinary Node.js modules. They primarily provide an interface between JavaScript running in Node.js and C/C++ libraries.
-Node.js的插件是用 C++ 编写的共享对象，他们是动态链接的。你可以在 Node.js 中使用 require() 方法加载它，并把它当作 Node.js 的模块使用。主要的功能就是提供了在 Node.js 和 C/C++ 之间的接口。
+Node.js的插件是用 C++ 编写的动态链接的共享对象。你可以在 Node.js 中使用 require() 方法加载它们，并把它们当作 Node.js 的模块使用。它们主要就是提供了在 Node.js 和 C/C++ 之间的接口。
 
-A native addon provides a simple interface to work with another binary by loading it in V8 runtime. It is very fast and safe for making calls across the languages. Currently, Node.js supports two types of addon methods: C++ addons and N-API C++/C addons.
-一个原生插件提供了一个简单的接口，可以让它在 V8 环境里加载却在另一种环境中运行。这种联通方式十分高效且安全。至今为止，Node.js 支持 2 种类型的插件：C++ 插件和 N-API C++/C 插件。
+原生插件提供了一个可以在另一种环境中运行，但在 V8 环境里加载的接口。这种语言之间的调用方式十分高效且安全。至今为止，Node.js 支持 2 种类型的插件：C++ 插件和 N-API C++/C 插件。
 
-## C++ addons
 ## C++ 插件
 
-A C++ addon is an object that can be mounted by Node.js and used in the runtime. Since C++ is a compiled language, these addons are very fast. C++ has a wide array of production-ready libraries that can be used to expand the Node.js ecosystem. Many popular libraries use native addons to improve performance and code quality.
-C++ 插件就是一个可以挂载且运行在 Node.js 的对象。由于 C++ 是编译语言，插件的速度就会很快。而且可以用 C++ 大量的生产环境的库来扩展 Node.js 的生态圈。许多流行的库都是用原生的插件来提高性能和代码质量。
+C++ 插件是一个可以挂载且运行在 Node.js 的对象。由于 C++ 是编译语言，插件的速度就会很快。而且可以利用 C++ 大量的生产环境的库来扩展 Node.js 的生态圈。许多流行的库都是用原生的插件来提高性能和代码质量。
 
-## N-API C++/C addons
 ## N-API C++/C 插件
 
-The main problem with C++ addons is that you need to recompile them with every change to underlying JavaScript runtime. It causes a problem with maintaining the addon. N-API tries to eliminate this by introducing a standard application binary interface (ABI). The C header file remains backward compatible. That means you can use the addon compiled for a particular version of Node.js with any version greater than the version for which it was compiled. You would use this method to implement your addon.
-C++ 插件主要的问题在于你需要重复编译，每当你改变 JavaScript 的执行环境。这会导致维护插件变得麻烦。N-API 则引入一套二进制接口标准（ABI）来规避这个问题。且 C 头文件保持向后兼容。这意味着你可以用特定版本的 Node.js 来编译插件，不需要顾虑更老的版本。你将会喜欢上这种方法来编译你的插件。
+C++ 插件主要的问题在于：每当你改变 JavaScript 的执行环境时都需要重新编译。这会导致维护插件变得麻烦。N-API 则引入一套二进制接口标准（ABI）来规避这个问题。且 C 头文件保持向后兼容。这意味着你可以用特定版本的 Node.js 来编译插件，不需要顾虑更老的版本。你将会喜欢上这种方法来编译你的插件。
 
-## Where does Rust come in?
 ## Rust 用在什么地方？
 
-Rust can mimic the behavior of a C library. In other words, it exports the function in a format C can understand and use. Rust calls the C function to access and use APIs provided by the Node.js. These APIs provide methods for creating JavaScript strings, arrays, numbers, error, objects, functions, and more. But we need to tell Rust what these external functions, structs, pointers, etc. look like.
-Rust 可以用来仿造 C 的库。或者说，它可以导出 C 风格且可以调用的函数。Rust 调用 C 函数来访问和调用 Node.js 提供的 APIs。这些 APIs 方法可以创建 JavaScript 的 strings, arrays, numbers, error, objects, functions 等。但我们需要告诉 Rust 一些必要的信息：外部函数，结构体，指针等，就像这样。
+Rust 可以用来仿造 C 的库。或者说，它可以导出 C 风格且可以被调用的函数。Rust 通过调用 C 函数来获取和调用 Node.js 提供的 APIs。这些 APIs 方法可以创建 JavaScript 的 strings, arrays, numbers, error, objects, functions 等。但我们需要告诉 Rust 一些必要的信息：外部函数，结构体，指针等，就像这样。
 
 ``` rust
 #[repr(C)]
@@ -81,25 +62,19 @@ extern {
 }
 ```
 
-Rust lays down the structs in memory differently, so we need to tell it to use the style C uses. It would be a pain to create these functions by hand, so we’ll use a crate called nodejs-sys, which uses bindgen to create a nice definition for N-API.
-Rust 会以不同的方式在内存中放置结构体，所以我们需要告诉它使用 C 风格的方式。手动创建这些方法会很痛苦，所以我们将会使用一个叫做 nodejs-sys 的库（crate），这个库使用了 bindgen 为 N-API 创建了一个很好的定义(原文：which uses bindgen to create a nice definition for N-API.)
+Rust 会以不同的方式在内存中储存结构体，所以我们需要告诉它使用 C 风格的形式。手动创建这些方法会很痛苦，所以我们将会使用一个叫做 nodejs-sys 的库（crate），这个库使用了 bindgen 为 N-API 创建了一个很好的定义。
 
-bindgen automatically generates Rust FFI bindings to C and C++ libraries.
-bindgen 自动生成了 Rust FFI 与 C 和 C++ 库的绑定。
+bindgen 会自动生成 Rust FFI 与 C/C++ 库的绑定。
 
-Note: There will a lot of unsafe code ahead, mostly external function calls.
-注意：之后将会有大量的不安全代码，主要是外部函数调用。
+注意：之后将会有大量的不安全代码，主要是外部函数调用的。
 
 ![](./img/joker-dont-say-i-didnt-warn-you-gif.gif)
 
-## Setting up your project
 ## 开始部署你的项目
 
-For this tutorial, you must have Node.js and Rust installed on your system, with Cargo and npm. I would suggest using Rustup to install Rust and nvm for Node.js.
 为了接下来的教程，你必须在系统里安装 Node.js 和 Rust，包括 Cargo 和 npm。我推荐使用 Rustup 来安装 Rust，Node.js 则使用 nvm 来安装。
 
-Create a directory named rust-addon and initialize a new npm project by running npm init. Next, init a cargo project called cargo init --lib. Your project directory should look like this:
-创建一个文件夹 rust-addon 并且用 `npm init` 来初始化一个项目。接着，同个文件夹用 `cargo init --lib` 来初始化一个 Rust（cargo） 项目。你的项目文件结构应该如下：
+创建一个文件夹 rust-addon 并且用 `npm init` 来初始化一个项目。接着，在这个文件夹里用 `cargo init --lib` 来初始化一个 Rust（cargo） 项目。你的项目文件结构应该如下：
 
 ```
 ./rust-addon/
@@ -110,11 +85,9 @@ Create a directory named rust-addon and initialize a new npm project by running 
     └── lib.rs
 ```
 
-## Configuring Rust to compile to the addon
-## 设置 Rust 编译插件的配置
+## 编译插件的 Rust 配置
 
-We need Rust to compile to a dynamic C library or object. Configure cargo to compile to the .so file on Linux, .dylib on OS X, and .dll on Windows. Rust can produce many different types of libraries using Rustc flags or Cargo.
-我们需要用 Rust 来编译成一个动态的 C 库或者一个对象。配置 cargo 在 Linux 上编译成 .so 文件，在 OS X 上编程成 .dylib，还有 Windows 上的 .dll.Rust 可以通过 Rustc flags 或者 Cargo 生成多个不同的库。
+我们需要用 Rust 来编译成一个动态的 C 库或者一个对象。配置 cargo 就可以在 Linux 上编译成 .so 文件，在 OS X 上编程成 .dylib，还有 Windows 上的 .dll。Rust 可以通过 Rustc flags 或者 Cargo 生成多个不同的库。
 
 ``` rust
 [package]
@@ -131,17 +104,13 @@ crate-type=["cdylib"]
 nodejs-sys = "0.2.0" // 最新的为0.12.0
 ```
 
-The lib key provides options to configure Rustc. The name key gives the library name to the shared object in the form of lib{name}, while type provides the type of library it should be compiled to — e.g., cdylib, rlib, etc. cdylib creates a dynamically linked C library. This shared object behaves like a C library.
-lib 提供了设置 Rustc 的选项。该库的对象名则会根据 name，命名为 `lib{name}`，而 crate-type 则是定义库的编程类型，例如 cdylib, rlib 等。如果是 cdylib 则会编译成动态链接的 C 库。这个共享对象就会和 C 库一样。
+lib 提供了设置 Rustc 的配置。库的对象名会根据 name，命名为 `lib{name}`，而 crate-type 则是定义库的编程类型，例如 cdylib, rlib 等。如果是 cdylib 则会编译成动态链接的 C 库。这个共享对象就会和 C 库一样。
 
-## Getting started with N-API
 ## 从 N-API 开始
 
-Let’s create our N-API library. We need to add a dependency. nodejs-sys provides the binding required for napi-header files. napi_register_module_v1 is the entry point for the addon. The N-API documentation recommends N-API_MODULE_INIT macro for module registration, which compiles to the napi_register_module_v1 function.
-让我们开始创建一个 N-API 库吧。首先添加依赖。nodejs-sys 提供了 napi-header 文件所需的绑定。napi_register_module_v1 就是插件的入口。N-API 文档推荐用 N-API_MODULE_INIT 宏来模块注册，因为这个宏会编译 napi_register_module_v1 函数。
+让我们开始创建一个 N-API 库吧。首先添加依赖。nodejs-sys 提供了 napi-header 文件所需的绑定。napi_register_module_v1 就是插件的入口。N-API 文档推荐用 N-API_MODULE_INIT 宏来模块注册，因为这个宏会编译成 napi_register_module_v1 函数。
 
-Node.js calls this function and provides it with an opaque pointer called napi_env, which refers to the configuration of the module in JavaScript runtime, and napi_value. The latter is another opaque pointer that represents a JavaScript value, which, in reality is an object known as an export. These exports are the same as those the require function provides to the Node.js modules in JavaScript.
-Node.js 调用这个函数，然后传递给它一个叫 napi_env 的不透明指针（opaque pointer），这个指针指向了在 JavaScript 运行时的模块配置，第二个不透明指针 napi_value 则是表示 JavaScript 变量，是一个导出的对象。这些导出的 “对象” 就和 JavaScript 中 require 函数提供给 Node.js 模块的 “对象” 一样。
+Node.js 调用这个函数，然后传递给它一个叫 napi_env 的不透明指针（opaque pointer），这个指针指向了在 JavaScript 运行时的模块配置，第二个不透明指针 napi_value 则是表示导出的对象，一个 JavaScript 的变量。这些导出的 “对象” 就和 JavaScript 中 require 函数提供给 Node.js 模块的 “对象” 一样。
 
 ``` rust
 use nodejs_sys::{napi_create_string_utf8, napi_env, napi_set_named_property, napi_value};
@@ -166,29 +135,21 @@ pub unsafe extern "C" fn napi_register_module_v1(
 }
 ```
 
-Rust represents owned strings with the String type and borrowed slices of strings with the str primitive. Both are always in UTF-8 encoding and may contain null bytes in the middle. If you look at the bytes that make up the string, there may be a \0 among them. Both String and str store their length explicitly; there are no null terminators at the end of strings like C strings.
-Rust 用 String 类型来表示拥有权的 strings（大小可变），用字符串切片来表示借用的 str（大小固定）。两者都是采用 UTF-8 编码，且可以包含空字节。如果你查看字符串的字节，其中可能有一个 \0。String 和 str 都有明确存储自身的长度，字符串的尾端和 C 的字符串一样没有终止符。
+Rust 用 String 类型来表示有拥有权的 strings（大小可变），用字符串切片来表示借用的 str（大小固定）。两者都是采用 UTF-8 编码，且可以包含空字节。如果你查看字符串的字节，其中可能有一个 \0。String 和 str 都有明确存储自身的长度，字符串的尾端没有和 C 的字符串一样终止符。
 
-Rust strings are very different from the ones in C, so we need to change our Rust strings to C strings before we can use then with N-API functions. Since exports is an object represented by exports, we can add functions, strings, arrays, or any other JavaScript objects as key-value pairs.
-Rust 的字符串和 C 的比非常的不相同，所以我们需要在使用 N-API 函数之前，把 Rust 字符串转化成 C 的字符串。因为导出的是一个对象，所以我们可以把函数，字符串，数组等其他 JavaScript 对象当作键值对（key-value pairs）。
+Rust 的字符串和 C 的比非常的不一样，所以我们需要在使用 N-API 函数之前，把 Rust 字符串转化成 C 的字符串。因为导出的是一个对象，所以我们可以把函数，字符串，数组等其他 JavaScript 变量当作键值对（key-value pairs）。
 
-To add a key to a JavaScript object, you can use a method provided by the N-API napi_set_named_property. This function takes the object to which we want to add a property; a pointer to a string that will be used as the key for our property; the pointer to the JavaScript value, which can be a string, array, etc.; and napi_env, which acts an anchor between Rust and Node.js.
-你可以使用 N-API 提供的 napi_set_named_property 方法来给 JavaScript 对象添加 key。这个函数接收我们要添加属性的对象，指针指向的字符串则会被用作我们属性的 key，而 JavaScript 变量的指针则可以是字符串，数组等。napi_env 则是充当了 Rust 和 Node.js 之间的锚点（anchor）。
+你可以使用 N-API 提供的 napi_set_named_property 方法来给 JavaScript 对象添加 key。这个函数接收我们要添加属性的对象，指针指向的字符串则会被用作我们属性的 key，而 JavaScript 变量的指针则可以是字符串，数组等。napi_env 则是充当了 Rust 和 Node.js 之间的锚点（anchor）（原文：and napi_env, which acts an anchor between Rust and Node.js.）。
 
-You can use N-API functions to create any JavaScript value. For example, we used napi_create_string_utf8 here to create a string. We passed in the environment a pointer to the string, the length of string, and a pointer to an empty memory location where it can write the pointer to the newly created value. All this code is unsafe because it includes many calls to external functions where the compiler cannot provide Rust guarantees. In the end, we returned the module that was provided to us by setting a property on it with the value world!.
-你可以用 N-API 的方法来创建任何的 JavaScript 的变量。例如，我们用 napi_create_string_utf8 来创建字符串。我们输入字符串的指针，字符串的长度，足够创建新变量的空内存地址指针。这里所有的代码都无法通过 Rust 编译来保证安全，因为这些东西包括了外部函数的调用。最后，我们返回的模块就能提供给我们设置的属性。
+你可以用 N-API 的方法来创建任何的 JavaScript 的变量。例如，我们用 napi_create_string_utf8 来创建字符串。我们传入了环境变量，字符串的指针，字符串的长度，足够创建新变量的空内存地址指针。这里所有的代码都无法通过 Rust 编译来保证安全，因为这些代码包括了许多外部调用的函数。最后，我们返回的模块里就能获取到我们设置的属性 `world!`。
 
-It’s important to understand that nodejs-sys just provides the required definitions for the function you’re using, not their implementation. N-API implementation is included with Node.js and you call it from your Rust code.
-重点是要理解 nodejs-sys 仅仅是提供必要的定义函数给你用，它并不会执行。N-API 则会执行包括 Node.js 和你在 Rust 代码里调用的函数。
+这里的重点是要理解 nodejs-sys 仅仅提供了必要的定义函数给你用，它并不会执行。N-API 则会被执行在 Node.js 和你在 Rust 代码里。
 
-## Using the addon in Node.js
 ## 在 Node.js 里使用插件
 
-The next step is to add a linking configuration for different operating systems, then you can compile it.
 接下来的步骤就是给不同的系统添加链接配置，然后编译它。
 
-Create a build.rs file to add a few configuration flags for linking the N-API files on different operating systems.
-创建一个 build.rs 的文件，添加一些配置标识，为了在不同的系统里关联 N-API 文件。
+在根目录下创建一个 build.rs 的文件，里面添加一些配置标识，为了在不同的系统里关联 N-API 文件。
 
 ``` rust
 fn main() {
@@ -199,26 +160,22 @@ fn main() {
 }
 ```
 
-Your directory should look like this:
 你的文件夹结构应该变成这样：
 
 ```
 ├── build.rs
 ├── Cargo.lock
 ├── Cargo.toml
-├── index.node
+├── index.node // 编译后的文件，之后会有
 ├── package.json
 ├── src
     └── lib.rs
 ```
 
-Now you need to compile your Rust addon. You can do so pretty easily using the simple command cargo build --release. This will take some time on the first run.
 现在，你需要去编译你的 Rust 插件了。你可以用简单的命令行 `cargo build --release` 来编译。第一次运行可以会多花点时间。
 
-After your module is compiled, create a copy of this binary from ./target/release/libnative.so to your root directory and rename it as index.node. The binary created by the cargo may have a different extension or name, depending on your crate setting and operating system.
 等你的插件编译好之后，复制这个库 `./target/release/lib{name}.dylib(.so)` 到你的项目的根目录，并且重命名为 `index.node`。cargo 会根据你不同的设置，系统和依赖，编译出二进制文件。
 
-Now you can require the file in Node.js and use it. You can also use it in a script. For example:
 现在你可以在 Node.js 里加载和使用这个文件，你也可以在脚本里使用他，像这样：
 
 ``` js
@@ -228,10 +185,8 @@ console.log(addon.hello);
 
 ![](./img/using-addon-in-node.png)
 
-Next, we’ll move on to creating functions, arrays, and promises and using libuv thread-pool to perform heavy tasks without blocking the main thread.
-接下来，我们会继续去创建函数，数组，还有 promise 和使用 libuv 的线程池（thread-pool）来提升重量级任务而不阻塞主线程。
+接下来，我们会继续去创建函数，数组，还有 promise 和使用 libuv 的线程池（thread-pool）来实现可以不阻塞主线程的重量级事件。
 
-## A deep dive into N-API
 ## 深入了解 N-API
 
 Now you know how to implement common patterns using N-API and Rust. A very common pattern is the export function, which can be called by the user of the library or Node module. Let’s start by creating a function.
