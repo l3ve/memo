@@ -26,7 +26,7 @@ impl Solution {
     }
 }
 
-===================
+/////////////////////////////////////////////////////////////
 
 use std::collections::HashMap;
 impl Solution {
@@ -118,7 +118,7 @@ impl Solution {
     }
 }
 
-===================
+/////////////////////////////////////////////////////////////
 
 impl Solution {
     pub fn add_two_numbers(l1: Option<Box<ListNode>>, l2: Option<Box<ListNode>>) -> Option<Box<ListNode>> {
@@ -181,7 +181,7 @@ pub fn length_of_longest_substring(s: String) -> i32 {
   count as i32
 }
 
-===================
+/////////////////////////////////////////////////////////////
 
 // 把 sub_str 改成 数组或者哈希
 
@@ -233,7 +233,7 @@ pub fn find_median_sorted_arrays(mut nums1: Vec<i32>, mut nums2: Vec<i32>) -> f6
 }
 
 
-===================
+/////////////////////////////////////////////////////////////
 
 pub fn find_median_sorted_arrays(nums1: Vec<i32>, nums2: Vec<i32>) -> f64 {
   if nums1.len() + nums2.len() == 0 {
@@ -310,7 +310,8 @@ pub fn longest_palindrome(s: String) -> String {
   s.join("")
 }
 
-===================
+/////////////////////////////////////////////////////////////
+
 impl Solution {
     pub fn longest_palindrome(s: String) -> String {
         let seq: Vec<char> = s.chars().collect();
@@ -391,7 +392,8 @@ pub fn convert(s: String, num_rows: i32) -> String {
   res
 }
 
-===================
+/////////////////////////////////////////////////////////////
+
 pub fn convert(s: String, num_rows: i32) -> String {
   if num_rows <= 1 {
     return s;
@@ -455,7 +457,8 @@ pub fn reverse(x: i32) -> i32 {
   res
 }
 
-===================
+/////////////////////////////////////////////////////////////
+
 pub fn reverse(x: i32) -> i32 {
         let mut num = x;
         let mut reverse_num: i32 = 0;
@@ -539,7 +542,8 @@ pub fn my_atoi(s: String) -> i32 {
   }
   res
 }
-===================
+/////////////////////////////////////////////////////////////
+
 pub fn my_atoi(s: String) -> i32 {
   let mut c = s.trim_start().chars();
   let mut r = 0;
@@ -580,6 +584,59 @@ pub fn my_atoi(s: String) -> i32 {
 
 ```
 
+## 9：回文数
+
+>给你一个整数 x ，如果 x 是一个回文整数，返回 true ；否则，返回 false 。
+>
+>回文数是指正序（从左向右）和倒序（从右向左）读都是一样的整数。例如，121 是回文，而 123 不是。
+>```
+>输入：x = -121
+>输出：false
+>解释：从左向右读, 为 -121 。 从右向左读, 为 121- 。因此它不是一个回文数。
+>```
+
+``` rust
+
+pub fn is_palindrome(x: i32) -> bool {
+  if x.is_negative() {
+    return false;
+  }
+  let mut s = x.to_string();
+  let mut res = false;
+  loop {
+    if s.len() == 1 {
+      res = true;
+      break;
+    }
+    if s.pop().unwrap() != s.remove(0) {
+      break;
+    }
+    if s.is_empty() {
+      res = true;
+      break;
+    }
+  }
+  res
+}
+
+
+/////////////////////////////////////////////////////////////
+
+pub fn is_palindrome(mut x: i32) -> bool {
+  if x < 0 || (x % 10 == 0 && x != 0) {
+    return false;
+  }
+  let mut r = 0;
+  while x > r {
+    r = r * 10 + x % 10;
+    x /= 10;
+  }
+  x == r || x == r / 10
+}
+
+```
+
+
 
 领悟心得：
 1. 善用数据结构，用 `HashMap` 来去重
@@ -590,5 +647,6 @@ pub fn my_atoi(s: String) -> i32 {
 6. 找规律而已
 7. match let 模式，边界的判断
 8. 边界判断是难点
+9. 多用基础类型，效率和内存都会优化很多
 
 > 来源：力扣（LeetCode）
