@@ -636,6 +636,131 @@ pub fn is_palindrome(mut x: i32) -> bool {
 
 ```
 
+## 10：正则表达式匹配
+
+>给你一个字符串 s 和一个字符规律 p，请你来实现一个支持 '.' 和 '*' 的正则表达式匹配。
+>
+>* '.' 匹配任意单个字符
+>* '*' 匹配零个或多个前面的那一个元素
+>
+>所谓匹配，是要涵盖 整个 字符串 s的，而不是部分字符串。
+
+``` rust
+
+pub fn is_match(s: String, p: String) -> bool {
+  let s_l = s.len();
+  let p_l = p.len();
+  let g: Vec<bool> = vec![false; p_l + 1];
+  let mut f: Vec<Vec<bool>> = vec![g; s_l + 1];
+  f[0][0] = true;
+
+  for i in 0..s_l + 1 {
+    for j in 1..p_l + 1 {
+      if &p[j - 1..j] == "*" {
+        if match_str(i, j - 1, &s, &p) {
+          f[i][j] = f[i - 1][j] || f[i][j - 2];
+        } else {
+          f[i][j] = f[i][j - 2];
+        }
+      } else if match_str(i, j, &s, &p) {
+        f[i][j] = f[i - 1][j - 1];
+      }
+    }
+  }
+  f[s_l][p_l]
+}
+
+fn match_str(i: usize, j: usize, s: &str, p: &str) -> bool {
+  if i == 0 {
+    return false;
+  }
+  if &p[j - 1..j] == "." {
+    return true;
+  }
+  return &s[i - 1..i] == &p[j - 1..j];
+}
+
+
+/////////////////////////////////////////////////////////////
+use crate::OpTimes::{One, ZeroOrMore};
+use crate::OpType::{AnyChar, OneChar};
+
+#[derive(PartialEq)]
+enum OpType {
+  AnyChar,
+  OneChar(char),
+}
+
+#[derive(PartialEq)]
+enum OpTimes {
+  One,
+  ZeroOrMore,
+}
+
+impl Solution {
+  pub fn is_match(s: String, p: String) -> bool {
+    let mut pattern = vec![];
+    for c in p.chars() {
+      match c {
+        '.' => pattern.push((AnyChar, One)),
+        '*' => pattern.last_mut().unwrap().1 = ZeroOrMore,
+        c => pattern.push((OneChar(c), One)),
+      }
+    }
+    fn matcher(sub: &str, pat: &[(OpType, OpTimes)]) -> bool {
+      let pp_may = pat.first();
+      if pp_may.is_none() {
+        return sub.len() == 0;
+      }
+
+      match pp_may.unwrap() {
+        (ct, One) => {
+          let mut chars = sub.chars();
+          if let Some(t) = chars.next() {
+            if *ct == AnyChar || OneChar(t) == *ct {
+              return matcher(chars.as_str(), &pat[1..]);
+            }
+          }
+          return false;
+        }
+        (ct, ZeroOrMore) => {
+          if matcher(sub, &pat[1..]) {
+            return true;
+          }
+          let mut chars = sub.chars();
+          let mut c = chars.next();
+          if c.is_none() {
+            return false;
+          }
+          match ct {
+            OneChar(exp) => {
+              while c == Some(*exp) {
+                if matcher(chars.as_str(), &pat[1..]) {
+                  return true;
+                }
+                c = chars.next()
+              }
+            }
+            AnyChar => {
+              while c.is_some() {
+                if matcher(chars.as_str(), &pat[1..]) {
+                  return true;
+                }
+                c = chars.next()
+              }
+            }
+          }
+          return false;
+        }
+      }
+    }
+    matcher(&s, &pattern)
+  }
+}
+
+```
+
+
 
 
 领悟心得：
@@ -648,5 +773,6 @@ pub fn is_palindrome(mut x: i32) -> bool {
 7. match let 模式，边界的判断
 8. 边界判断是难点
 9. 多用基础类型，效率和内存都会优化很多
+10. 动态规划还是不熟悉，优解也有点意思
 
 > 来源：力扣（LeetCode）
