@@ -760,7 +760,57 @@ impl Solution {
 
 ```
 
+## 11：盛最多水的容器
 
+>给你 n 个非负整数 a1，a2，...，an，每个数代表坐标中的一个点 (i, ai) 。在坐标内画 n 条垂直线，垂直线 i 的两个端点分别为 (i, ai) 和 (i, 0) 。找出其中的两条线，使得它们与 x 轴共同构成的容器可以容纳最多的水。
+
+``` rust
+pub fn max_area(height: Vec<i32>) -> i32 {
+  let mut left = 0;
+  let mut l_max_height = height[left];
+  let mut right = height.len() - 1;
+  let mut r_max_height = height[right];
+  let mut max_area = l_max_height.min(r_max_height) * (right - left) as i32;
+  loop {
+    if height[left] < height[right] {
+      loop {
+        left = left + 1;
+        if left >= right {
+          break;
+        }
+        let l_height = height[left];
+        if l_height > l_max_height {
+          l_max_height = l_height;
+          break;
+        }
+      }
+    } else {
+      loop {
+        right = right - 1;
+        if left >= right {
+          break;
+        }
+        let r_right = height[right];
+        if r_right > r_max_height {
+          r_max_height = r_right;
+          break;
+        }
+      }
+    }
+    if left >= right {
+      break;
+    }
+    let area = l_max_height.min(r_max_height) * (right - left) as i32;
+    if area > max_area {
+      max_area = area
+    }
+  }
+  return max_area;
+}
+
+/////////////////////////////////////////////////////////////
+
+```
 
 
 领悟心得：
@@ -774,5 +824,6 @@ impl Solution {
 8. 边界判断是难点
 9. 多用基础类型，效率和内存都会优化很多
 10. 动态规划还是不熟悉，优解也有点意思
+11. 从边界判断下手，本质是求集合
 
 > 来源：力扣（LeetCode）
