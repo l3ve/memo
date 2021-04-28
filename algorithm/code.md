@@ -813,6 +813,49 @@ pub fn max_area(height: Vec<i32>) -> i32 {
 ```
 
 
+
+## 12 -- 剑指 Offer 3: 数组中重复的数字
+
+>找出数组中重复的数字。
+>
+>在一个长度为 n 的数组 nums 里的所有数字都在 0～n-1 的范围内。数组中某些数字是重复的，但不知道有几个数字重复了，也不知道每个数字重复了几次。请找出数组中任意一个重复的数字。
+
+
+``` rust
+use std::collections::HashSet;
+
+pub fn find_repeat_number(nums: Vec<i32>) -> i32 {
+  let mut _a: HashSet<&i32> = HashSet::new();
+  for num in nums.iter() {
+    if _a.contains(num) {
+      return  *num;
+    };
+    _a.insert(num);
+  }
+  return 0;
+}
+
+
+/////////////////////////////////////////////////////////////
+
+impl Solution {
+    pub fn find_repeat_number(nums: Vec<i32>) -> i32 {
+        let mut tmp = nums;
+        tmp.sort();
+        for (idx,val) in tmp.iter().enumerate(){
+            if val==&tmp[idx+1]{
+                return tmp[idx];
+            }
+        }
+        return 0;
+    }
+}
+
+```
+
+
+
+
 领悟心得：
 1. 善用数据结构，用 `HashMap` 来去重
 2. 用 `match` 来处理 `Option`
@@ -825,5 +868,6 @@ pub fn max_area(height: Vec<i32>) -> i32 {
 9. 多用基础类型，效率和内存都会优化很多
 10. 动态规划还是不熟悉，优解也有点意思
 11. 从边界判断下手，本质是求集合
+12. sort效率很高？
 
 > 来源：力扣（LeetCode）
