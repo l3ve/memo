@@ -853,7 +853,31 @@ impl Solution {
 
 ```
 
+## 13 -- 剑指 Offer 04. 二维数组中的查找
 
+>在一个 n * m 的二维数组中，每一行都按照从左到右递增的顺序排序，每一列都按照从上到下递增的顺序排序。请完成一个高效的函数，输入这样的一个二维数组和一个整数，判断数组中是否含有该整数。
+
+``` rust
+pub fn find_number_in2_d_array(matrix: Vec<Vec<i32>>, target: i32) -> bool {
+  let mut m = matrix;
+  for _v in m.iter_mut() {
+    _v.reverse();
+    for v in _v.iter() {
+      if target > *v {
+        break
+      }
+      if target == *v {
+        return true
+      }
+    }
+  }
+  return false;
+}
+
+
+/////////////////////////////////////////////////////////////
+
+```
 
 
 领悟心得：
@@ -869,5 +893,6 @@ impl Solution {
 10. 动态规划还是不熟悉，优解也有点意思
 11. 从边界判断下手，本质是求集合
 12. sort效率很高？
+13. 遍历的效率？while > for?
 
 > 来源：力扣（LeetCode）
