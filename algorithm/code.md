@@ -880,6 +880,31 @@ pub fn find_number_in2_d_array(matrix: Vec<Vec<i32>>, target: i32) -> bool {
 ```
 
 
+## 14 -- 剑指 Offer 05. 替换空格
+
+>请实现一个函数，把字符串 s 中的每个空格替换成"%20"。
+
+``` rust
+pub fn replace_space(s: String) -> String {
+  let mut _s = String::new();
+  for c in s.chars() {
+    if c == ' ' {
+      _s.push_str("%20");
+    } else {
+      _s.push(c);
+    }
+  }
+  return _s;
+}
+
+/////////////////////////////////////////////////////////////
+
+```
+
+
+
+
+
 领悟心得：
 1. 善用数据结构，用 `HashMap` 来去重
 2. 用 `match` 来处理 `Option`
@@ -893,6 +918,7 @@ pub fn find_number_in2_d_array(matrix: Vec<Vec<i32>>, target: i32) -> bool {
 10. 动态规划还是不熟悉，优解也有点意思
 11. 从边界判断下手，本质是求集合
 12. sort效率很高？
-13. 遍历的效率？while > for?
+13. 遍历的效率？while > for?(for有迭代器，如果类型复杂消耗会高？！)
+14. rust 的字符类型是一种比较特殊的数据类型，需要熟悉（单引号是 char，双引号是字符切片）
 
 > 来源：力扣（LeetCode）
