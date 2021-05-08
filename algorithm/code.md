@@ -904,6 +904,29 @@ pub fn replace_space(s: String) -> String {
 
 
 
+## 15 -- 剑指 Offer 06. 从尾到头打印链表
+
+>输入一个链表的头节点，从尾到头反过来返回每个节点的值（用数组返回）。
+
+``` rust
+pub fn reverse_print(head: Option<Box<ListNode>>) -> Vec<i32> {
+  let mut res = vec![];
+  let mut v: Option<Box<ListNode>> = head;
+  while v.is_some() {
+    res.push(v.as_ref().unwrap().val);
+    if v.as_ref().unwrap().next == None {
+      break;
+    }
+    v = v.unwrap().next;
+  }
+  res.reverse();
+  return res;
+}
+
+/////////////////////////////////////////////////////////////
+
+```
+
 
 领悟心得：
 1. 善用数据结构，用 `HashMap` 来去重
@@ -920,5 +943,6 @@ pub fn replace_space(s: String) -> String {
 12. sort效率很高？
 13. 遍历的效率？while > for?(for有迭代器，如果类型复杂消耗会高？！)
 14. rust 的字符类型是一种比较特殊的数据类型，需要熟悉（单引号是 char，双引号是字符切片）
+15. vec 的 push + reverse 比 insert 快
 
 > 来源：力扣（LeetCode）
