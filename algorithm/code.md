@@ -927,6 +927,52 @@ pub fn reverse_print(head: Option<Box<ListNode>>) -> Vec<i32> {
 
 ```
 
+## 16 -- 剑指 Offer 07. 重建二叉树（105. 从前序与中序遍历序列构造二叉树）
+>输入某二叉树的前序遍历和中序遍历的结果，请重建该二叉树。假设输入的前序遍历和中序遍历的结果中都不含重复的数字。
+
+``` rust
+
+pub fn build_tree(preorder: Vec<i32>, inorder: Vec<i32>) -> Option<Rc<RefCell<TreeNode>>> {
+  return build(&preorder[..],&inorder[..])
+}
+
+pub fn build(preorder: &[i32], inorder: &[i32]) -> Option<Rc<RefCell<TreeNode>>> {
+
+  if preorder.len() == 0 {
+    return None;
+  }
+  let root = preorder[0];
+  let mut tree = TreeNode::new(root);
+
+  if preorder.len() == 1 {
+    return Some(Rc::new(RefCell::new(tree)));
+  }
+
+  let root_index = inorder.iter().position(|&x| x == root).unwrap_or(0);
+
+  let right_inorder = &inorder[root_index + 1..];
+  let left_inorder = &inorder[0..root_index];
+  let left_preorder = &preorder[1..left_inorder.len() + 1];
+  let right_preorder = &preorder[left_preorder.len() + 1..];
+
+  let left_tree = build(left_preorder, left_inorder);
+
+  let right_tree = build(right_preorder, right_inorder);
+
+  tree.left = left_tree;
+  tree.right = right_tree;
+
+  return Some(Rc::new(RefCell::new(tree)));
+}
+
+
+/////////////////////////////////////////////////////////////
+
+```
+
+
+
+
 
 领悟心得：
 1. 善用数据结构，用 `HashMap` 来去重
@@ -944,5 +990,6 @@ pub fn reverse_print(head: Option<Box<ListNode>>) -> Vec<i32> {
 13. 遍历的效率？while > for?(for有迭代器，如果类型复杂消耗会高？！)
 14. rust 的字符类型是一种比较特殊的数据类型，需要熟悉（单引号是 char，双引号是字符切片）
 15. vec 的 push + reverse 比 insert 快
+16. 算法问题，记得多用引用少用所有权，且勿改变数据的类型，有利于运行的速度
 
 > 来源：力扣（LeetCode）
