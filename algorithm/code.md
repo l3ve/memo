@@ -971,6 +971,90 @@ pub fn build(preorder: &[i32], inorder: &[i32]) -> Option<Rc<RefCell<TreeNode>>>
 ```
 
 
+## 17 -- 剑指 Offer 10- I. 斐波那契数列
+>写一个函数，输入 n ，求斐波那契（Fibonacci）数列的第 n 项（即 F(N)）。
+
+``` rust
+pub fn fib(mut n: i32) -> i32 {
+  if n <= 1 {
+    return n;
+  }
+  let mut pre: u128 = 0;
+  let mut cur: u128 = 1;
+  while n - 1 > 0 {
+    cur = pre + cur;
+    pre = cur - pre;
+    n -= 1;
+  }
+  return (cur % 1000000007) as i32;
+}
+
+/////////////////////////////////////////////////////////////
+
+```
+
+
+
+
+## 18 -- 剑指 Offer 11. 旋转数组的最小数字
+>把一个数组最开始的若干个元素搬到数组的末尾，我们称之为数组的旋转。输入一个递增排序的数组的一个旋转，输出旋转数组的最小元素。例如，数组 [3,4,5,1,2] 为 [1,2,3,4,5] 的一个旋转，该数组的最小值为1。  
+
+``` rust
+pub fn min_array(numbers: Vec<i32>) -> i32 {
+  let mut numbers = numbers;
+  let len = numbers.len();
+  if len == 1 {
+    return numbers[0]
+  }
+  if len == 2 {
+    return numbers[0].min(numbers[1]);
+  }
+  let mut s = 0;
+  let mut e = len -1;
+  loop {
+    if s == e {
+      return numbers[0]
+    }
+    if numbers[s] == numbers[s+1] {
+      s += 1;
+      continue;
+    }
+    if numbers[e] == numbers[e-1] {
+      e -= 1;
+      continue;
+    }
+    numbers = numbers.drain(s..e+1).collect();
+    break
+  }
+  let len = numbers.len();
+  let mut point = len / 2;
+
+  loop {
+    if numbers[point] <= numbers[len - 1] {
+      if point == 0 {
+        return numbers[0]
+      }
+      if numbers[point] < numbers[point - 1] {
+        return numbers[point];
+      }
+      point -= 1;
+    } else {
+      if point == len -1 {
+        return  numbers[len -1]
+      }
+      if numbers[point] > numbers[point + 1] {
+        return numbers[point + 1];
+      }
+      point += 1;
+    }
+  }
+}
+
+
+/////////////////////////////////////////////////////////////
+
+```
+
 
 
 
@@ -991,5 +1075,7 @@ pub fn build(preorder: &[i32], inorder: &[i32]) -> Option<Rc<RefCell<TreeNode>>>
 14. rust 的字符类型是一种比较特殊的数据类型，需要熟悉（单引号是 char，双引号是字符切片）
 15. vec 的 push + reverse 比 insert 快
 16. 算法问题，记得多用引用少用所有权，且勿改变数据的类型，有利于运行的速度
+17. 少用递归，多月队列或者循环代替
+18. 用二分法查询，且利用是有序数组可以更加高效，唯一要注意的是数组有多处相等的情况，如[2,2,2,1,2]与[2,1,2,2,2],此方法无法得知左遍历还是右遍历，故先消除相同的值。
 
 > 来源：力扣（LeetCode）
