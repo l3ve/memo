@@ -1061,6 +1061,159 @@ pub fn min_array(numbers: Vec<i32>) -> i32 {
 
 
 
+
+## 19 -- 剑指 Offer 12. 矩阵中的路径
+
+>给定一个 m x n 二维字符网格 board 和一个字符串单词 word 。如果 word 存在于网格中，返回 true ；否则，返回 false 。
+>
+>单词必须按照字母顺序，通过相邻的单元格内的字母构成，其中“相邻”单元格是那些水平相邻或垂直相邻的单元格。同一个单元格内的字母不允许被重复使用。  
+
+``` rust
+
+use std::collections::HashSet;
+
+#[derive(Debug)]
+struct Path {
+  position: (usize, usize, usize),
+  direction: Vec<(usize, usize, usize)>,
+}
+impl Path {
+  fn new(
+    position: (usize, usize),
+    index: usize,
+    height: usize,
+    width: usize,
+    map: &Vec<Vec<char>>,
+    word: &str,
+  ) -> Path {
+    let mut p = Path {
+      direction: vec![],
+      position: (position.0, position.1, index),
+    };
+    let index = index + 1;
+    let next_char = word.chars().skip(index).next().unwrap();
+    // top
+    if position.0 > 0 && map[position.0 - 1][position.1] == next_char {
+      p.direction.push((position.0 - 1, position.1, index));
+    }
+    // bottom
+    if position.0 < height && map[position.0 + 1][position.1] == next_char {
+      p.direction.push((position.0 + 1, position.1, index));
+    }
+    // left
+    if position.1 > 0 && map[position.0][position.1 - 1] == next_char {
+      p.direction.push((position.0, position.1 - 1, index));
+    }
+    // right
+    if position.1 < width && map[position.0][position.1 + 1] == next_char {
+      p.direction.push((position.0, position.1 + 1, index));
+    }
+    p
+  }
+}
+pub fn exist(board: Vec<Vec<char>>, word: String) -> bool {
+  let max_height = board.len() - 1;
+  let max_width = board[0].len() - 1;
+  let len = word.len();
+  let mut stack = vec![];
+  let mut enter = vec![];
+  let mut hmap: HashSet<(usize, usize)> = HashSet::new();
+  let first_char = &word.chars().next().unwrap();
+  for (i, line) in board.iter().enumerate() {
+    for (ii, c) in line.iter().enumerate() {
+      if c == first_char {
+        if len == 1 {
+          return true;
+        }
+        let p = Path::new((i, ii), 0, max_height, max_width, &board, &word);
+        if p.direction.len() > 0 {
+          enter.push(p);
+        }
+      }
+    }
+  }
+
+  for x in enter.into_iter() {
+    hmap.clear();
+    hmap.insert((x.position.0, x.position.1));
+    stack.insert(0, x);
+    loop {
+      if stack.len() == 0 {
+        break;
+      }
+      let mut cur_position = stack.remove(0);
+
+      if cur_position.direction.len() == 0 {
+        hmap.remove(&(cur_position.position.0, cur_position.position.1));
+      } else {
+        let next_position = cur_position.direction.remove(0);
+        stack.insert(0, cur_position);
+        if hmap.contains(&(next_position.0, next_position.1)) {
+          continue;
+        }
+        if next_position.2 == len - 1 {
+          return true;
+        }
+        let p = Path::new(
+          (next_position.0, next_position.1),
+          next_position.2,
+          max_height,
+          max_width,
+          &board,
+          &word,
+        );
+        if p.direction.len() > 0 {
+          hmap.insert((p.position.0, p.position.1));
+          stack.insert(0, p);
+        }
+      }
+    }
+  }
+  return false;
+}
+
+
+/////////////////////////////////////////////////////////////
+
+// 深度优先，标记数组防止重复访问
+impl Solution {
+    pub fn exist(board: Vec<Vec<char>>, word: String) -> bool {
+        let chars = word.chars().collect::<Vec<char>>();
+        let mut visit = vec![vec![false; board[0].len()]; board.len()];
+        for i in 0..board.len() {
+            for j in 0..board[0].len() {
+                if find(&board, i, j, 0, &chars, &mut visit) {
+                    return true;
+                }
+            }
+        }
+        false
+    }
+}
+
+pub fn find(board: &Vec<Vec<char>>, i: usize, j: usize, idx: usize, chars: &Vec<char>, visit: &mut Vec<Vec<bool>>) -> bool {
+    if i >= board.len() || j >= board[0].len() || visit[i][j] || board[i][j] != chars[idx] {
+        return false;
+    }
+    if idx == chars.len() - 1 {
+        return true;
+    }
+    visit[i][j] = true;
+    let find = find(board, i + 1, j, idx + 1, chars, visit) ||
+        if i > 0 { find(board, i - 1, j, idx + 1, chars, visit) } else { false } ||
+        find(board, i, j + 1, idx + 1, chars, visit) ||
+        if j > 0 { find(board, i, j - 1, idx + 1, chars, visit) } else { false };
+    visit[i][j] = false;
+
+    return find;
+}
+
+```
+
+
+
+
+
 领悟心得：
 1. (两数之和) 善用数据结构，用 `HashMap` 来去重
 2. (两数相加)用 `match` 来处理 `Option`
@@ -1080,6 +1233,7 @@ pub fn min_array(numbers: Vec<i32>) -> i32 {
 16. (重建二叉树)算法问题，记得多用引用少用所有权，且勿改变数据的类型，有利于运行的速度
 17. (斐波那契数列)少用递归，多月队列或者循环代替
 18. (旋转数组的最小数字)用二分法查询，且利用是有序数组可以更加高效，唯一要注意的是数组有多处相等的情况，如[2,2,2,1,2]与[2,1,2,2,2],此方法无法得知左遍历还是右遍历，故先消除相同的值。
+19. 不想用递归，所以写复制了，很多地方可以优化，最优解好像没办法尾递归？！
 
 
 > 来源：力扣（LeetCode）
