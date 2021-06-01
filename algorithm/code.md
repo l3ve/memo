@@ -1213,6 +1213,123 @@ pub fn find(board: &Vec<Vec<char>>, i: usize, j: usize, idx: usize, chars: &Vec<
 
 
 
+## 20 -- 剑指 Offer 13. 机器人的运动范围
+
+>地上有一个m行n列的方格，从坐标 [0,0] 到坐标 [m-1,n-1] 。一个机器人从坐标 [0, 0] 的格子开始移动，它每次可以向左、右、上、下移动一格（不能移动到方格外），也不能进入行坐标和列坐标的数位之和大于k的格子。例如，当k为18时，机器人能够进入方格 [35, 37] ，因为3+5+3+7=18。但它不能进入方格 [35, 38]，因为3+5+3+8=19。请问该机器人能够到达多少个格子？
+
+``` rust
+
+use std::collections::HashSet;
+
+pub fn moving_count(m: i32, n: i32, k: i32) -> i32 {
+  let mut stack = vec![];
+  let mut res = 0;
+  let mut set: HashSet<(i32, i32)> = HashSet::new();
+  if k < 0 {
+    return 1;
+  }
+  stack.push((0, 0));
+  set.insert((0, 0));
+  loop {
+    if stack.is_empty() {
+      break;
+    }
+    let p = stack.remove(0);
+    let sum = get_sum((p.0, p.1));
+
+    if sum <= k {
+      res += 1;
+      // left
+      if p.1 > 0 {
+        let left = (p.0, p.1 - 1);
+        if !set.contains(&left) {
+          set.insert(left);
+          stack.push(left)
+        }
+      }
+      // right
+      if p.1 < n - 1 {
+        let right = (p.0, p.1 + 1);
+        if !set.contains(&right) {
+          set.insert(right);
+          stack.push(right)
+        }
+      }
+      // bottom
+      if p.0 < m - 1 {
+        let bottom = (p.0 + 1, p.1);
+        if !set.contains(&bottom) {
+          set.insert(bottom);
+          stack.push(bottom)
+        }
+      }
+      // top
+      if p.0 > 0 {
+        let top = (p.0 - 1, p.1);
+        if !set.contains(&top) {
+          set.insert(top);
+          stack.push(top)
+        }
+      }
+    }
+  }
+  return res;
+}
+
+fn get_sum(num: (i32, i32)) -> i32 {
+  let mut res0 = 0;
+  let mut num = num;
+  while num.0 >= 10 {
+    res0 += num.0 % 10;
+    num.0 /= 10;
+  }
+  res0 = res0 + num.0;
+  let mut res1 = 0;
+  while num.1 >= 10 {
+    res1 += num.1 % 10;
+    num.1 /= 10;
+  }
+  res1 = res1 + num.1;
+  return res0 + res1;
+}
+
+
+/////////////////////////////////////////////////////////////
+use std::cmp::max;
+
+impl Solution {
+    pub fn moving_count(m: i32, n: i32, k: i32) -> i32 {
+        fn digitos_summare(n: usize) -> i32 {
+            let mut n = n as i32;
+            let mut res = 0i32;
+            while n > 0 {
+                res += n%10;
+                n /= 10;
+            }
+            res
+        }
+        let mut rec = vec![vec![false; n as usize]; m as usize];
+        let mut res = 0;
+        rec[0][0] = true;
+        for i in 0..rec.len() {
+            for j in 0..rec[0].len() {
+                if digitos_summare(i)+digitos_summare(j)<=k {
+                    rec[i][j] = rec[max(1, i)-1][j] || rec[i][max(1, j)-1];
+                    if rec[i][j] {
+                        res += 1;
+                    }
+                }
+            }
+        }
+        res
+    }
+
+}
+
+```
+
+
+
 
 领悟心得：
 1. (两数之和) 善用数据结构，用 `HashMap` 来去重
@@ -1234,6 +1351,7 @@ pub fn find(board: &Vec<Vec<char>>, i: usize, j: usize, idx: usize, chars: &Vec<
 17. (斐波那契数列)少用递归，多月队列或者循环代替
 18. (旋转数组的最小数字)用二分法查询，且利用是有序数组可以更加高效，唯一要注意的是数组有多处相等的情况，如[2,2,2,1,2]与[2,1,2,2,2],此方法无法得知左遍历还是右遍历，故先消除相同的值。
 19. 不想用递归，所以写复制了，很多地方可以优化，最优解好像没办法尾递归？！
+20. 去重部分花太多内存了，优解都是创建二位数组，消耗上 set > vec ?
 
 
 > 来源：力扣（LeetCode）
