@@ -1,6 +1,6 @@
 {
   "devDependencies": {
-    "commitizen": "^4.2.4"
+    "commitizen": "^4.3.0"
   },
   "config": {
     "commitizen": {
